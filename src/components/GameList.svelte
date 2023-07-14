@@ -1,8 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getOwnedGames } from "../scripts/steamApiRequests";
+  import { checkGameOwnership, getFriendsList, getOwnedGames } from "../lib/steamApiRequests";
+  import toast from "svelte-french-toast";
+  import { loading } from "../stores/loading";
 
   export let steamId: string;
+  export let selectedGame: number = NaN;
+  export let gameOwners: Object[] = [];
   let ownedGames: any[];
   let loadedGames: any[];
   $: if(ownedGames) { loadedGames = ownedGames.slice(0, bufferSize) };
@@ -19,6 +23,9 @@
           unloadedGames = ownedGames.length - bufferSize;
         }
         
+      })
+      .catch(() => {
+        toast.error("Could not access list of games for this profile");
       });
   });
 
@@ -31,6 +38,14 @@
     }
     return 0;
   }
+
+  async function handleGameClick(game: any) {
+    $loading.state = true;
+    const steamFriends = await getFriendsList(steamId);
+    const friendsWithGame = await checkGameOwnership(steamFriends, game.appid.toString());
+    console.log(friendsWithGame);
+    $loading.state = false;
+  }
 </script>
 
 {#if !ownedGames}
@@ -38,8 +53,11 @@
 {:else} 
   <div class="game-list">
     {#each loadedGames as game}
-      <img src={`https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg`} alt={`Image for appid ${game.appid}`}>
-    {/each}
+      <img src={`https://cdn.akamai.steamstatic.com/steam/apps/${game.appid}/capsule_184x69.jpg`}
+           alt={`Image for appid ${game.appid}`}
+           on:click={() => handleGameClick(game)}
+           on:keyup={() => selectedGame = game.appid}>
+    {/each} 
     {#if unloadedGames > 0}
       <button on:click={() => { 
         if(bufferSize + 50 > ownedGames.length) {
@@ -61,13 +79,17 @@
   .game-list {
     display: flex;
     flex-direction: column;
-    height: 460px;
-    width: 300px;
-    overflow-y: scroll;
+    height: inherit;
+    align-items: center;
   }
 
   .game-list img {
-    width: 120px;
+    width: 140px;
+  }
+
+  .game-list img:hover {
+    opacity: 75%;
+    cursor: pointer;
   }
 
 </style>

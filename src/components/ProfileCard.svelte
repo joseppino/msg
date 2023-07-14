@@ -4,7 +4,7 @@
 
 <div class="profile-card">
   <img src={profile.avatarmedium} alt="Profile Avatar">
-  <p>{profile.personaname}</p>
+  <h3>{profile.personaname}</h3>
 </div>
 
 <style>
@@ -13,6 +13,7 @@
     display: flex;
     flex-direction: row;
     border: 1px solid #c7d5e0;
+    width: 300px;
   }
 
 </style>

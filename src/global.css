@@ -12,6 +12,8 @@ body {
 main {
   width: 900px;
   height: 100vh;
+  max-height: 100vh;
+  overflow: hide;
   background-color: #1b2838;
 
 }
